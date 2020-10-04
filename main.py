@@ -102,7 +102,7 @@ def cal_source_grad(inception_model, source_img, target_rep):
     # cal gradient
     similarity.backward()
 
-    return source_img.grad.data, similarity
+    return source_img.grad.data, similarity.cpu().item()
 
 
 def iterative_grad_attack(inception_model, source_img, target_img,
@@ -116,6 +116,8 @@ def iterative_grad_attack(inception_model, source_img, target_img,
         # print('grad range ', grad.max(), grad.min())
         perturbed_img = perturbed_img + lr * grad
         perturbed_img = torch.clamp(perturbed_img, -1.0, 1.0).detach_()
+        if similarity > 0.98:
+            break
         # if step % 50 == 1:
         #     print('step {}, similarity: {:.4f}'.format(step, similarity.item()))
     adv_rep = inception_model(perturbed_img)
