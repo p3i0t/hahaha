@@ -77,7 +77,7 @@ def iterative_grad_attack(inception_model, source_img, target_img,
     for step in range(n_steps):
         grad, similarity = cal_source_grad(inception_model, perturbed_img, target_rep)
         perturbed_img = perturbed_img + lr * grad
-        perturbed_img = torch.clamp(perturbed_img, -1., 1.).detach_()
+        perturbed_img = torch.clamp(perturbed_img, 0., 1.).detach_()
         print('step {}, loss: {:.4f}'.format(step, similarity.item()))
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum()
@@ -116,6 +116,7 @@ def attack(args, mode='val'):
             source_img = preprocess_image(source_path)
             target_img = preprocess_image(target_path)
 
+            print('range ', source_img.max(), source_img.min())
             adv_img, dist, rep_dist = iterative_grad_attack(
                 resnet, source_img, target_img,
                 lr=args.attack_lr, n_steps=args.attack_steps)
