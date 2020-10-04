@@ -10,10 +10,14 @@ def imresample(img, sz):
     return im_data
 
 
-def to_int8(image):
+def array_to_image(image):
     image = np.clip(image, 0, 255).astype(np.uint8)
     image = Image.fromarray(image)  # Convert to PIL.Image
     return image
+
+
+def tensor_to_image(image):
+    return array_to_image(image.numpy())
 
 
 def crop_resize_back(img_origin, img_crop, box, box_size):
@@ -21,7 +25,6 @@ def crop_resize_back(img_origin, img_crop, box, box_size):
     img = img_origin.copy()
 
     if isinstance(img_crop, np.ndarray):
-        #img = img[box[1]:box[3], box[0]:box[2]]
         out = cv2.resize(
             img_crop,
             box_size,
@@ -29,7 +32,6 @@ def crop_resize_back(img_origin, img_crop, box, box_size):
         ).copy()
         img[box[1]:box[3], box[0]:box[2]] = out
     elif isinstance(img_crop, torch.Tensor):
-        #img = img[box[1]:box[3], box[0]:box[2]]
         out = imresample(
             img_crop.permute(2, 0, 1).unsqueeze(0).float(),
             box_size
@@ -40,19 +42,13 @@ def crop_resize_back(img_origin, img_crop, box, box_size):
 
         img = np.asarray(img).copy()
         out = np.asarray(out)
-
-        #out = cv2.resize(
-        #      out,
-        #      box_size,
-        #      interpolation=cv2.INTER_AREA
-        #  ).copy()
-        #print(img.flags)
-        #img.setflags(write=1)
-        #print(out.shape)
-        #print(img.shape)
-        #print(box)
+        # print(img.flags)
+        # img.setflags(write=1)
+        # print(out.shape)
+        # print(img.shape)
+        # print(box)
         img[box[1]:box[3], box[0]:box[2]] = out
-        img = to_int8(img)
+        img = array_to_image(img)
     return img
 
 
@@ -69,5 +65,6 @@ def compute_dist(img_a, img_b):
     diff = np.clip(diff, -epsilon, epsilon)
 
     pixel_diff_norms = np.linalg.norm(diff, ord=2, axis=2)
-    #print(np.sum(pixel_diff_norms))
-    return np.mean(pixel_diff_norms)    
+    # print(np.sum(pixel_diff_norms))
+    return np.mean(pixel_diff_norms)
+
