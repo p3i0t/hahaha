@@ -24,7 +24,7 @@ def tensor_to_image(image):
 
 
 def crop_resize_back(img_origin, img_crop, box, box_size):
-    assert type(img_origin) == type(img_crop)
+    # assert type(img_origin) == type(img_crop)
     img = img_origin.copy()
 
     if isinstance(img_crop, np.ndarray):
