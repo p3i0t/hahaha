@@ -59,7 +59,7 @@ def cal_source_grad(inception_model, source_img, target_rep):
 
     inception_model.zero_grad()
     # cal gradient
-    loss_dist.backward()
+    (-loss_dist).backward()
 
     return source_img.grad.data, loss_dist
 
@@ -75,7 +75,7 @@ def iterative_grad_attack(inception_model, source_img, target_img,
     for step in range(n_steps):
         grad, loss_dist = cal_source_grad(inception_model, perturbed_img, target_rep)
         perturbed_img = perturbed_img + lr * grad
-        perturbed_img = torch.clamp(perturbed_img, 0., 1.)
+        perturbed_img = torch.clamp(perturbed_img, 0., 1.).detach_()
         print('step {}, loss: {:.4f}'.format(step, loss_dist.item()))
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum()
