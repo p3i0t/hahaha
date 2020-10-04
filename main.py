@@ -137,6 +137,7 @@ def attack(args, mode='val'):
     np.random.seed(args.seed)
     if mode == 'val':
         logger.info('==> Attach on Val Set')
+        print('==> Attach on Val Set')
         image_path_list = glob.glob('val_cropped/*_cropped.png')
         image_path_list_shuffle = np.random.permutation(image_path_list)
         pixel_dist_list = []
@@ -155,8 +156,9 @@ def attack(args, mode='val'):
         for batch_idx, (source_img, target_img, src_paths, tgt_paths) in enumerate(dataloader):
             # source_img = preprocess_image(source_path)
             # target_img = preprocess_image(target_path)
-            if batch_idx % 20 == 19:
+            if batch_idx % 20 == 1:
                 logger.info('batch {} finished '.format(batch_idx))
+                print('batch {} finished '.format(batch_idx))
             source_img = source_img.cuda()
             target_img = target_img.cuda()
 
@@ -184,6 +186,7 @@ def attack(args, mode='val'):
         pair_out.close()
     else:
         logger.info('==> Attach on Test Set')
+        print('==> Attach on Test Set')
         pixel_dist_list = []
         rep_dist_list = []
         original_pixel_dist_list = []
