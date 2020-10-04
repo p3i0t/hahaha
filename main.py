@@ -67,7 +67,7 @@ def cal_source_grad(inception_model, source_img, target_rep):
 
 
 def iterative_grad_attack(inception_model, source_img, target_img,
-                          n_steps=40, lr=0.001):
+                          n_steps=40, lr=0.01):
     source_img = source_img.unsqueeze(0)
     target_img = target_img.unsqueeze(0)
     with torch.no_grad():
@@ -77,7 +77,7 @@ def iterative_grad_attack(inception_model, source_img, target_img,
     for step in range(n_steps):
         grad, similarity = cal_source_grad(inception_model, perturbed_img, target_rep)
         perturbed_img = perturbed_img + lr * grad
-        perturbed_img = torch.clamp(perturbed_img, 0., 1.).detach_()
+        perturbed_img = torch.clamp(perturbed_img, -1.0, 1.0).detach_()
         print('step {}, loss: {:.4f}'.format(step, similarity.item()))
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum()
@@ -123,6 +123,7 @@ def attack(args, mode='val'):
 
             pixel_dist_list.append(dist)
             rep_dist_list.append(rep_dist)
+            print('source path ', source_path)
             source_id = source_path[4:8]
             target_id = target_path[4:8]
             source_name = '{}_adv.png'.format(source_id)
@@ -217,7 +218,7 @@ if __name__ == "__main__":
                         default=200, help="Minibatch size")
     parser.add_argument("--optimizer", type=str,
                         default="adam", help="adam or adamax")
-    parser.add_argument("--attack_lr", type=float, default=0.001,
+    parser.add_argument("--attack_lr", type=float, default=0.01,
                         help="Attack learning rate")
     parser.add_argument("--attack_steps", type=int, default=20,
                         help="Number of iterative attack steps")
