@@ -78,7 +78,8 @@ def iterative_grad_attack(inception_model, source_img, target_img,
         grad, similarity = cal_source_grad(inception_model, perturbed_img, target_rep)
         perturbed_img = perturbed_img + lr * grad
         perturbed_img = torch.clamp(perturbed_img, -1.0, 1.0).detach_()
-        print('step {}, loss: {:.4f}'.format(step, similarity.item()))
+        if step % 10 == 9:
+            print('step {}, loss: {:.4f}'.format(step, similarity.item()))
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum()
 
