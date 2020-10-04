@@ -117,8 +117,8 @@ def iterative_grad_attack(inception_model, source_img, target_img,
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum(dim=1).mean().cpu().item()
 
-    adv_imgs = [tensor_to_image(img.squeeze(0)) for img in fixed_image_standardization_inverse(perturbed_img).split(split_size=1, dim=0)]
-    target_imgs = [tensor_to_image(img.squeeze(0)) for img in fixed_image_standardization_inverse(target_img).split(split_size=1, dim=0)]
+    adv_imgs = [tensor_to_image(img.squeeze(0)) for img in fixed_image_standardization_inverse(perturbed_img.cpu()).split(split_size=1, dim=0)]
+    target_imgs = [tensor_to_image(img.squeeze(0)) for img in fixed_image_standardization_inverse(target_img.cpu()).split(split_size=1, dim=0)]
 
     dist_list = [compute_dist(np.asarray(adv_img), np.asarray(target_img)) for (adv_img, target_img) in zip(adv_imgs, target_imgs)]
     dist = np.mean(dist_list)
