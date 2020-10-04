@@ -107,12 +107,12 @@ def iterative_grad_attack(inception_model, source_img, target_img,
         target_rep = inception_model(target_img).detach()
 
     perturbed_img = source_img.clone()
-    for step in range(n_steps):
+    for step in range(1, n_steps+1):
         grad, similarity = cal_source_grad(inception_model, perturbed_img, target_rep)
         # print('grad range ', grad.max(), grad.min())
         perturbed_img = perturbed_img + lr * grad
         perturbed_img = torch.clamp(perturbed_img, -1.0, 1.0).detach_()
-        if step % 20 == 9:
+        if step % 50 == 1:
             print('step {}, similarity: {:.4f}'.format(step, similarity.item()))
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum(dim=1).mean().cpu().item()
@@ -213,7 +213,7 @@ def attack(args, mode='val'):
                 target_name = '{}.png'.format(target_id)
 
                 # crop resize back and save.
-                origin_img = Image.open('val/{}.png'.format(source_id))
+                origin_img = Image.open('test/{}.png'.format(source_id))
                 info_img = pickle.load(open('test_cropped/{}_info.pkl'.format(source_id), 'rb'))
 
                 adv_img_full = crop_resize_back(origin_img, adv_imgs[idx], info_img['box'], info_img['box_size'])
@@ -251,9 +251,9 @@ if __name__ == "__main__":
                         default=200, help="Minibatch size")
     parser.add_argument("--optimizer", type=str,
                         default="adam", help="adam or adamax")
-    parser.add_argument("--attack_lr", type=float, default=1.,
+    parser.add_argument("--attack_lr", type=float, default=0.5,
                         help="Attack learning rate")
-    parser.add_argument("--attack_steps", type=int, default=50,
+    parser.add_argument("--attack_steps", type=int, default=200,
                         help="Number of iterative attack steps")
     parser.add_argument("--lr", type=float, default=0.001,
                         help="Base learning rate")
