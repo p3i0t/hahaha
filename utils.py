@@ -17,7 +17,10 @@ def array_to_image(image):
 
 
 def tensor_to_image(image):
-    return array_to_image(image.numpy())
+    if image.size()[-1] != 3:
+        image = image.permute(1, 2, 0)
+    image_arr = image.numpy()
+    return array_to_image(image_arr)
 
 
 def crop_resize_back(img_origin, img_crop, box, box_size):
