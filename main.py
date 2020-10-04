@@ -18,20 +18,22 @@ def fixed_image_standardization_inverse(image_tensor):
     return image_tensor * 128.0 + 127.5
 
 
-def extraction(imgage_dir, mtcnn):
-    files = os.listdir(imgage_dir)
+def extraction(image_dir, mtcnn):
+    files = os.listdir(image_dir)
     for file in files:
-        file_path = os.path.join(imgage_dir, file)
+        if not file.endswith('png'):
+            continue
+        file_path = os.path.join(image_dir, file)
         img_origin = Image.open(file_path)
         id = file.split('.')[0]
         _, box_size, box = mtcnn(
             img_origin,
-            save_path=os.path.join(imgage_dir, '{}_cropped.png'.format(id)))
+            save_path=os.path.join('{}_cropped'.format(image_dir), '{}_cropped.png'.format(id)))
 
         # save box_size and box for future recovery.
         img_meta_dict = {'id': id, 'box_size': box_size, 'box': box}
         pickle.dump(img_meta_dict,
-                    open(os.path.join(imgage_dir, '{}_info.pkl'.format(id)), 'wb'))
+                    open(os.path.join('{}_cropped'.format(image_dir), '{}_info.pkl'.format(id)), 'wb'))
 
 
 def face_extraction(args):
@@ -95,7 +97,7 @@ def attack(args, mode='val'):
 
     np.random.seed(args.seed)
     if mode == 'val':
-        image_path_list = glob.glob('val/*_cropped.png')
+        image_path_list = glob.glob('val_cropped/*_cropped.png')
         image_path_list_shuffle = np.random.permutation(image_path_list)
         pixel_dist_list = []
         rep_dist_list = []
@@ -122,16 +124,16 @@ def attack(args, mode='val'):
 
             # crop resize back and save.
             origin_img = Image.open('val/{}.png'.format(source_id))
-            info_img = pickle.load(open('val/{}_info.pkl'.format(source_id), 'rb'))
+            info_img = pickle.load(open('val_cropped/{}_info.pkl'.format(source_id), 'rb'))
             recovered_img = crop_resize_back(origin_img, adv_img, info_img['box'], info_img['box_size'])
-            recovered_img.save(os.path.join(log_dir, source_name))
+            recovered_img.save(os.path.join(log_dir, mode + '/' + source_name))
 
             original_pixel_dist_list.append(compute_dist(np.asarray(recovered_img), np.asarray(origin_img)))
             pair_out.write('{} {}\n'.format(source_name, target_name))
         pair_out.close()
     else:
-        image_path_list = glob.glob('test/*_cropped.png')
-        image_path_list_shuffle = np.random.permutation(image_path_list)
+        # image_path_list = glob.glob('test_cropped/*_cropped.png')
+        # image_path_list_shuffle = np.random.permutation(image_path_list)
         pixel_dist_list = []
         rep_dist_list = []
         original_pixel_dist_list = []
@@ -145,8 +147,8 @@ def attack(args, mode='val'):
             source_id = source_path[:4]
             target_id = target_path[:4]
 
-            source_path = os.path.join('test/{}_cropped.png'.format(source_id))
-            target_path = os.path.join('test/{}_cropped.png'.format(target_id))
+            source_path = os.path.join('test_cropped/{}_cropped.png'.format(source_id))
+            target_path = os.path.join('test_cropped/{}_cropped.png'.format(target_id))
             source_img = preprocess_image(source_path)
             target_img = preprocess_image(target_path)
 
@@ -156,9 +158,9 @@ def attack(args, mode='val'):
 
             # crop resize back and save.
             origin_img = Image.open('test/{}.png'.format(source_id))
-            info_img = pickle.load(open('test/{}_info.pkl'.format(source_id), 'rb'))
+            info_img = pickle.load(open('test_cropped/{}_info.pkl'.format(source_id), 'rb'))
             recovered_img = crop_resize_back(origin_img, adv_img, info_img['box'], info_img['box_size'])
-            recovered_img.save(os.path.join(log_dir, '{}_adv.png'.format(source_id)))
+            recovered_img.save(os.path.join(log_dir, '{}/{}_adv.png'.format(mode, source_id)))
 
             pixel_dist_list.append(dist)
             rep_dist_list.append(rep_dist)
@@ -239,6 +241,18 @@ if __name__ == "__main__":
 
     if os.path.exists(args.log_dir) is False:
         os.mkdir(args.log_dir)
+
+    if os.path.exists('val_cropped') is False:
+        os.mkdir('val_cropped')
+
+    if os.path.exists('test_cropped') is False:
+        os.mkdir('test_cropped')
+
+    if os.path.exists(os.path.join(args.log_dir, 'val')) is False:
+        os.mkdir(os.path.join(args.log_dir, 'val'))
+
+    if os.path.exists(os.path.join(args.log_dir, 'test')) is False:
+        os.mkdir(os.path.join(args.log_dir, 'test'))
 
     if args.face_extraction:
         face_extraction(args)
