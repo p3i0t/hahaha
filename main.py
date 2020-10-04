@@ -271,7 +271,7 @@ if __name__ == "__main__":
                         default="adam", help="adam or adamax")
     parser.add_argument("--attack_lr", type=float, default=1.,
                         help="Attack learning rate")
-    parser.add_argument("--attack_steps", type=int, default=200,
+    parser.add_argument("--attack_steps", type=int, default=300,
                         help="Number of iterative attack steps")
     parser.add_argument("--lr", type=float, default=0.001,
                         help="Base learning rate")
@@ -311,7 +311,7 @@ if __name__ == "__main__":
     if args.face_extraction:
         face_extraction(args)
     else:
-        # pixel_dist, pixel_crop_dist, rep_dist = attack(args, 'val')
-        # print('=>[Val] pixel dist: {:.3f}, pixel_crop_dist: {:.3f}, rep_dist: {:.3f}'.format(pixel_dist, pixel_crop_dist, rep_dist))
+        pixel_dist, pixel_crop_dist, rep_dist = attack(args, 'val')
+        print('=>[Val] pixel dist: {:.3f}, pixel_crop_dist: {:.3f}, rep_dist: {:.3f}'.format(pixel_dist, pixel_crop_dist, rep_dist))
         pixel_dist, pixel_crop_dist, rep_dist = attack(args, 'test')
         print('=>[Test] pixel dist: {:.3f}, pixel_crop_dist: {:.3f}, rep_dist: {:.3f}'.format(pixel_dist, pixel_crop_dist, rep_dist))
