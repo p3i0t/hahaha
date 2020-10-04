@@ -76,10 +76,10 @@ def iterative_grad_attack(inception_model, source_img, target_img,
     perturbed_img = source_img.clone()
     for step in range(n_steps):
         grad, similarity = cal_source_grad(inception_model, perturbed_img, target_rep)
-        print('grad range ', grad.max(), grad.min())
+        # print('grad range ', grad.max(), grad.min())
         perturbed_img = perturbed_img + lr * grad
         perturbed_img = torch.clamp(perturbed_img, -1.0, 1.0).detach_()
-        if step % 10 == 9:
+        if step % 20 == 9:
             print('step {}, loss: {:.4f}'.format(step, similarity.item()))
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum()
@@ -223,9 +223,9 @@ if __name__ == "__main__":
                         default=200, help="Minibatch size")
     parser.add_argument("--optimizer", type=str,
                         default="adam", help="adam or adamax")
-    parser.add_argument("--attack_lr", type=float, default=0.01,
+    parser.add_argument("--attack_lr", type=float, default=1.,
                         help="Attack learning rate")
-    parser.add_argument("--attack_steps", type=int, default=20,
+    parser.add_argument("--attack_steps", type=int, default=50,
                         help="Number of iterative attack steps")
     parser.add_argument("--lr", type=float, default=0.001,
                         help="Base learning rate")
