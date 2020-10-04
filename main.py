@@ -116,7 +116,7 @@ def iterative_grad_attack(inception_model, source_img, target_img,
         # print('grad range ', grad.max(), grad.min())
         perturbed_img = perturbed_img + lr * grad
         perturbed_img = torch.clamp(perturbed_img, -1.0, 1.0).detach_()
-        if similarity > 0.95:
+        if similarity > 0.99:
             break
         # if step % 50 == 1:
         #     print('step {}, similarity: {:.4f}'.format(step, similarity.item()))
@@ -149,7 +149,8 @@ def attack(args, mode='val'):
         if not os.path.isdir(log_dir):
             os.mkdir(log_dir)
 
-        pair_out = open(os.path.join(log_dir, 'pair.txt'), 'w')
+        # pair_out = open(os.path.join(log_dir, 'pair.txt'), 'w')
+        pair_list = []
         dataset = PairDataset(image_path_list_shuffle, image_path_list)
         dataloader = DataLoader(dataset, batch_size=args.attack_batch_size,
                                 shuffle=False,
@@ -184,8 +185,10 @@ def attack(args, mode='val'):
                 adv_img_full.save(os.path.join(log_dir, source_name))
 
                 original_pixel_dist_list.append(compute_dist(np.asarray(adv_img_full), np.asarray(origin_img)))
-                pair_out.write('{} {}\n'.format(source_name, target_name))
-        pair_out.close()
+                pair_list.append((source_name, target_name))
+        pickle.dump(pair_list, open(os.path.join(log_dir, 'pair.pickle'), 'wb'))
+        #         pair_out.write('{} {}\n'.format(source_name, target_name))
+        # pair_out.close()
     else:
         logger.info('==> Attach on Test Set')
         print('==> Attach on Test Set')
@@ -209,7 +212,7 @@ def attack(args, mode='val'):
                                 shuffle=False,
                                 drop_last=False, num_workers=8)
 
-        for batch_idx, (source_img, target_img, src_paths, tgt_paths) in dataloader:
+        for batch_idx, (source_img, target_img, src_paths, tgt_paths) in enumerate(dataloader):
             if batch_idx % 20 == 19:
                 logger.info('batch {} finished '.format(batch_idx))
             source_img = source_img.cuda()
@@ -308,7 +311,7 @@ if __name__ == "__main__":
     if args.face_extraction:
         face_extraction(args)
     else:
-        pixel_dist, pixel_crop_dist, rep_dist = attack(args, 'val')
-        print('=>[Val] pixel dist: {:.3f}, pixel_crop_dist: {:.3f}, rep_dist: {:.3f}'.format(pixel_dist, pixel_crop_dist, rep_dist))
+        # pixel_dist, pixel_crop_dist, rep_dist = attack(args, 'val')
+        # print('=>[Val] pixel dist: {:.3f}, pixel_crop_dist: {:.3f}, rep_dist: {:.3f}'.format(pixel_dist, pixel_crop_dist, rep_dist))
         pixel_dist, pixel_crop_dist, rep_dist = attack(args, 'test')
         print('=>[Test] pixel dist: {:.3f}, pixel_crop_dist: {:.3f}, rep_dist: {:.3f}'.format(pixel_dist, pixel_crop_dist, rep_dist))
