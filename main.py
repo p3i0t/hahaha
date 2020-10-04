@@ -124,8 +124,8 @@ def attack(args, mode='val'):
             pixel_dist_list.append(dist)
             rep_dist_list.append(rep_dist)
             print('source path ', source_path)
-            source_id = source_path[4:8]
-            target_id = target_path[4:8]
+            source_id = source_path.split('/')[-1][:4]
+            target_id = target_path.split('/')[-1][:4]
             source_name = '{}_adv.png'.format(source_id)
             target_name = '{}.png'.format(target_id)
 
