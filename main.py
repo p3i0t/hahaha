@@ -116,7 +116,7 @@ def iterative_grad_attack(inception_model, source_img, target_img,
         # print('grad range ', grad.max(), grad.min())
         perturbed_img = perturbed_img + lr * grad
         perturbed_img = torch.clamp(perturbed_img, -1.0, 1.0).detach_()
-        if similarity > 0.98:
+        if similarity > 0.95:
             break
         # if step % 50 == 1:
         #     print('step {}, similarity: {:.4f}'.format(step, similarity.item()))
