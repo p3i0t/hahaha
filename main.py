@@ -15,6 +15,10 @@ from facenet_pytorch import MTCNN, extract_face,\
 from utils import crop_resize_back, compute_dist,\
                   tensor_to_image, array_to_image
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def preprocess_image(image_path):
     "Load Image, normalize and convert to tensor."
@@ -112,8 +116,8 @@ def iterative_grad_attack(inception_model, source_img, target_img,
         # print('grad range ', grad.max(), grad.min())
         perturbed_img = perturbed_img + lr * grad
         perturbed_img = torch.clamp(perturbed_img, -1.0, 1.0).detach_()
-        if step % 50 == 1:
-            print('step {}, similarity: {:.4f}'.format(step, similarity.item()))
+        # if step % 50 == 1:
+        #     print('step {}, similarity: {:.4f}'.format(step, similarity.item()))
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum(dim=1).mean().cpu().item()
 
@@ -132,6 +136,7 @@ def attack(args, mode='val'):
 
     np.random.seed(args.seed)
     if mode == 'val':
+        logger.info('==> Attach on Val Set')
         image_path_list = glob.glob('val_cropped/*_cropped.png')
         image_path_list_shuffle = np.random.permutation(image_path_list)
         pixel_dist_list = []
@@ -147,9 +152,11 @@ def attack(args, mode='val'):
                                 shuffle=False,
                                 drop_last=False, num_workers=8)
 
-        for source_img, target_img, src_paths, tgt_paths in dataloader:
+        for batch_idx, (source_img, target_img, src_paths, tgt_paths) in enumerate(dataloader):
             # source_img = preprocess_image(source_path)
             # target_img = preprocess_image(target_path)
+            if batch_idx % 20 == 19:
+                logger.info('batch {} finished '.format(batch_idx))
             source_img = source_img.cuda()
             target_img = target_img.cuda()
 
@@ -176,6 +183,7 @@ def attack(args, mode='val'):
                 pair_out.write('{} {}\n'.format(source_name, target_name))
         pair_out.close()
     else:
+        logger.info('==> Attach on Test Set')
         pixel_dist_list = []
         rep_dist_list = []
         original_pixel_dist_list = []
@@ -196,7 +204,9 @@ def attack(args, mode='val'):
                                 shuffle=False,
                                 drop_last=False, num_workers=8)
 
-        for source_img, target_img, src_paths, tgt_paths in dataloader:
+        for batch_idx, (source_img, target_img, src_paths, tgt_paths) in dataloader:
+            if batch_idx % 20 == 19:
+                logger.info('batch {} finished '.format(batch_idx))
             source_img = source_img.cuda()
             target_img = target_img.cuda()
 
@@ -246,12 +256,12 @@ if __name__ == "__main__":
 
     # Optimization hyperparams:
     parser.add_argument("--attack_batch_size", type=int,
-                        default=20, help="attack batch size")
+                        default=1, help="attack batch size")
     parser.add_argument("--n_batch_test", type=int,
                         default=200, help="Minibatch size")
     parser.add_argument("--optimizer", type=str,
                         default="adam", help="adam or adamax")
-    parser.add_argument("--attack_lr", type=float, default=0.5,
+    parser.add_argument("--attack_lr", type=float, default=1.,
                         help="Attack learning rate")
     parser.add_argument("--attack_steps", type=int, default=200,
                         help="Number of iterative attack steps")
