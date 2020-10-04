@@ -61,7 +61,7 @@ def cal_source_grad(inception_model, source_img, target_rep):
 
     inception_model.zero_grad()
     # cal gradient
-    (-similarity).backward()
+    similarity.backward()
 
     return source_img.grad.data, similarity
 
@@ -113,18 +113,18 @@ def attack(args, mode='val'):
             os.mkdir(log_dir)
 
         pair_out = open(os.path.join(log_dir, 'pair.txt'), 'w')
-        for source_path, target_path in zip(image_path_list_shuffle, image_path_list):
+        for sample_idx, (source_path, target_path) in enumerate(zip(image_path_list_shuffle, image_path_list)):
+            if sample_idx % 20 == 19:
+                print('sample {} finished. '.format(sample_idx))
             source_img = preprocess_image(source_path)
             target_img = preprocess_image(target_path)
 
-            print('range ', source_img.max(), source_img.min())
             adv_img, dist, rep_dist = iterative_grad_attack(
                 resnet, source_img, target_img,
                 lr=args.attack_lr, n_steps=args.attack_steps)
 
             pixel_dist_list.append(dist)
             rep_dist_list.append(rep_dist)
-            print('source path ', source_path)
             source_id = source_path.split('/')[-1][:4]
             target_id = target_path.split('/')[-1][:4]
             source_name = '{}_adv.png'.format(source_id)
@@ -133,7 +133,7 @@ def attack(args, mode='val'):
             # crop resize back and save.
             origin_img = Image.open('val/{}.png'.format(source_id))
             info_img = pickle.load(open('val_cropped/{}_info.pkl'.format(source_id), 'rb'))
-            print('type ', type(origin_img), type(adv_img))
+
             recovered_img = crop_resize_back(origin_img, adv_img, info_img['box'], info_img['box_size'])
             recovered_img.save(os.path.join(log_dir, source_name))
 
@@ -143,6 +143,8 @@ def attack(args, mode='val'):
     else:
         # image_path_list = glob.glob('test_cropped/*_cropped.png')
         # image_path_list_shuffle = np.random.permutation(image_path_list)
+        if sample_idx % 20 == 19:
+            print('sample {} finished. '.format(sample_idx))
         pixel_dist_list = []
         rep_dist_list = []
         original_pixel_dist_list = []
@@ -151,7 +153,7 @@ def attack(args, mode='val'):
             os.mkdir(log_dir)
 
         pair_in = open('test/pair.txt', 'r')
-        for line in pair_in:
+        for sample_idx, line in enumerate(pair_in):
             source_name, target_name = line.strip().split(' ')
             source_id = source_path[:4]
             target_id = target_path[:4]
