@@ -134,7 +134,7 @@ def attack(args, mode='val'):
             info_img = pickle.load(open('val_cropped/{}_info.pkl'.format(source_id), 'rb'))
             print('type ', type(origin_img), type(adv_img))
             recovered_img = crop_resize_back(origin_img, adv_img, info_img['box'], info_img['box_size'])
-            recovered_img.save(os.path.join(log_dir, mode + '/' + source_name))
+            recovered_img.save(os.path.join(log_dir, source_name))
 
             original_pixel_dist_list.append(compute_dist(np.asarray(recovered_img), np.asarray(origin_img)))
             pair_out.write('{} {}\n'.format(source_name, target_name))
@@ -168,7 +168,7 @@ def attack(args, mode='val'):
             origin_img = Image.open('test/{}.png'.format(source_id))
             info_img = pickle.load(open('test_cropped/{}_info.pkl'.format(source_id), 'rb'))
             recovered_img = crop_resize_back(origin_img, adv_img, info_img['box'], info_img['box_size'])
-            recovered_img.save(os.path.join(log_dir, '{}/{}_adv.png'.format(mode, source_id)))
+            recovered_img.save(os.path.join(log_dir, '{}_adv.png'.format(source_id)))
 
             pixel_dist_list.append(dist)
             rep_dist_list.append(rep_dist)
