@@ -132,6 +132,7 @@ def attack(args, mode='val'):
             # crop resize back and save.
             origin_img = Image.open('val/{}.png'.format(source_id))
             info_img = pickle.load(open('val_cropped/{}_info.pkl'.format(source_id), 'rb'))
+            print('type ', type(origin_img), type(adv_img))
             recovered_img = crop_resize_back(origin_img, adv_img, info_img['box'], info_img['box_size'])
             recovered_img.save(os.path.join(log_dir, mode + '/' + source_name))
 
