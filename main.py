@@ -74,6 +74,7 @@ def iterative_grad_attack(inception_model, source_img, target_img,
     with torch.no_grad():
         target_rep = inception_model(target_img).detach()
         target_rep = FF.normalize(target_rep)
+        print('norm ', target_rep.norm(p=2))
 
     perturbed_img = source_img.clone()
     for step in range(n_steps):
