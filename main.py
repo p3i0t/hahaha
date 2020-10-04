@@ -31,7 +31,7 @@ def extraction(imgage_dir, mtcnn):
         # save box_size and box for future recovery.
         img_meta_dict = {'id': id, 'box_size': box_size, 'box': box}
         pickle.dump(img_meta_dict,
-                    os.path.join(imgage_dir, '{}_info.pkl'.format(id)))
+                    open(os.path.join(imgage_dir, '{}_info.pkl'.format(id)), 'wb'))
 
 
 def face_extraction(args):
@@ -122,7 +122,7 @@ def attack(args, mode='val'):
 
             # crop resize back and save.
             origin_img = Image.open('val/{}.png'.format(source_id))
-            info_img = pickle.load('{}_info.pkl'.format(source_id))
+            info_img = pickle.load(open('val/{}_info.pkl'.format(source_id), 'rb'))
             recovered_img = crop_resize_back(origin_img, adv_img, info_img['box'], info_img['box_size'])
             recovered_img.save(os.path.join(log_dir, source_name))
 
@@ -156,7 +156,7 @@ def attack(args, mode='val'):
 
             # crop resize back and save.
             origin_img = Image.open('test/{}.png'.format(source_id))
-            info_img = pickle.load('{}_info.pkl'.format(source_id))
+            info_img = pickle.load(open('test/{}_info.pkl'.format(source_id), 'rb'))
             recovered_img = crop_resize_back(origin_img, adv_img, info_img['box'], info_img['box_size'])
             recovered_img.save(os.path.join(log_dir, '{}_adv.png'.format(source_id)))
 
