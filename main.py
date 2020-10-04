@@ -56,15 +56,14 @@ def get_pretrained_inception_model(dataset='vggface2'):
 def cal_source_grad(inception_model, source_img, target_rep):
     source_img.requires_grad = True
     source_rep = inception_model(source_img)
-    source_rep = FF.normalize(source_rep)
 
-    loss_dist = (target_rep * source_rep).sum()
+    simlarity = (target_rep * source_rep).sum()
 
     inception_model.zero_grad()
     # cal gradient
-    (-loss_dist).backward()
+    (-similarity).backward()
 
-    return source_img.grad.data, loss_dist
+    return source_img.grad.data, simlarity
 
 
 def iterative_grad_attack(inception_model, source_img, target_img,
@@ -73,15 +72,13 @@ def iterative_grad_attack(inception_model, source_img, target_img,
     target_img = target_img.unsqueeze(0)
     with torch.no_grad():
         target_rep = inception_model(target_img).detach()
-        target_rep = FF.normalize(target_rep)
-        print('norm ', target_rep.norm(p=2))
 
     perturbed_img = source_img.clone()
     for step in range(n_steps):
-        grad, loss_dist = cal_source_grad(inception_model, perturbed_img, target_rep)
+        grad, similarity = cal_source_grad(inception_model, perturbed_img, target_rep)
         perturbed_img = perturbed_img + lr * grad
-        perturbed_img = torch.clamp(perturbed_img, 0., 1.).detach_()
-        print('step {}, loss: {:.4f}'.format(step, loss_dist.item()))
+        perturbed_img = torch.clamp(perturbed_img, -1., 1.).detach_()
+        print('step {}, loss: {:.4f}'.format(step, similarity.item()))
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum()
 
@@ -221,7 +218,7 @@ if __name__ == "__main__":
                         default="adam", help="adam or adamax")
     parser.add_argument("--attack_lr", type=float, default=0.001,
                         help="Attack learning rate")
-    parser.add_argument("--attack_steps", type=int, default=40,
+    parser.add_argument("--attack_steps", type=int, default=20,
                         help="Number of iterative attack steps")
     parser.add_argument("--lr", type=float, default=0.001,
                         help="Base learning rate")
