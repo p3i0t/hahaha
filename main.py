@@ -57,13 +57,13 @@ def cal_source_grad(inception_model, source_img, target_rep):
     source_img.requires_grad = True
     source_rep = inception_model(source_img)
 
-    simlarity = (target_rep * source_rep).sum()
+    similarity = (target_rep * source_rep).sum()
 
     inception_model.zero_grad()
     # cal gradient
     (-similarity).backward()
 
-    return source_img.grad.data, simlarity
+    return source_img.grad.data, similarity
 
 
 def iterative_grad_attack(inception_model, source_img, target_img,
