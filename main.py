@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 
 import torch
-import torch.nn.functional as F
+from torchvision.transforms import functional as F
 from facenet_pytorch import MTCNN, extract_face,\
                             InceptionResnetV1, fixed_image_standardization
 
@@ -66,6 +66,8 @@ def cal_source_grad(inception_model, source_img, target_rep):
 
 def iterative_grad_attack(inception_model, source_img, target_img,
                           n_steps=40, lr=0.001):
+    source_img = source_img.unsqueeze(0)
+    target_img = target_img.unsqueeze(0)
     with torch.no_grad():
         target_rep = inception_model(target_img).detach()
 
@@ -78,8 +80,8 @@ def iterative_grad_attack(inception_model, source_img, target_img,
     adv_rep = inception_model(perturbed_img)
     rep_dist = (target_rep * adv_rep).sum()
 
-    adv_img = tensor_to_image(fixed_image_standardization_inverse(perturbed_img))
-    target_img = tensor_to_image(fixed_image_standardization_inverse(target_img))
+    adv_img = tensor_to_image(fixed_image_standardization_inverse(perturbed_img.squeeze(0)))
+    target_img = tensor_to_image(fixed_image_standardization_inverse(target_img.squeeze(0)))
 
     dist = compute_dist(np.asarray(adv_img), np.asarray(target_img))
     return adv_img, dist, rep_dist
@@ -94,7 +96,7 @@ def preprocess_image(image_path):
 
 def attack(args, mode='val'):
     # Create an inception resnet (in eval mode):
-    resnet = InceptionResnetV1(pretrained=args.dataset_pretrained).val()
+    resnet = InceptionResnetV1(pretrained=args.dataset_pretrained).eval()
 
     np.random.seed(args.seed)
     if mode == 'val':
