@@ -159,9 +159,9 @@ def attack(args, mode='val'):
         for batch_idx, (source_img, target_img, src_paths, tgt_paths) in enumerate(dataloader):
             # source_img = preprocess_image(source_path)
             # target_img = preprocess_image(target_path)
-            if batch_idx % 20 == 1:
-                logger.info('batch {} finished '.format(batch_idx))
-                print('batch {} finished '.format(batch_idx))
+            # if batch_idx % 20 == 1:
+            #     logger.info('batch {} finished '.format(batch_idx))
+                # print('batch {} finished '.format(batch_idx))
             source_img = source_img.cuda()
             target_img = target_img.cuda()
 
@@ -171,6 +171,7 @@ def attack(args, mode='val'):
 
             pixel_dist_list.append(dist)
             rep_dist_list.append(rep_dist)
+            print('sample {}, rep_similarity: {:.3f}'.format(batch_idx+1, rep_dist))
             for idx, (source_path, target_path) in enumerate(zip(src_paths, tgt_paths)):
                 source_id = source_path.split('/')[-1][:4]
                 target_id = target_path.split('/')[-1][:4]
@@ -213,8 +214,8 @@ def attack(args, mode='val'):
                                 drop_last=False, num_workers=8)
 
         for batch_idx, (source_img, target_img, src_paths, tgt_paths) in enumerate(dataloader):
-            if batch_idx % 20 == 19:
-                logger.info('batch {} finished '.format(batch_idx))
+            # if batch_idx % 20 == 19:
+            #     logger.info('batch {} finished '.format(batch_idx))
             source_img = source_img.cuda()
             target_img = target_img.cuda()
 
@@ -224,6 +225,7 @@ def attack(args, mode='val'):
 
             pixel_dist_list.append(dist)
             rep_dist_list.append(rep_dist)
+            print('sample {}, rep_similarity: {:.3f}'.format(batch_idx+1, rep_dist))
             for idx, (source_path, target_path) in enumerate(zip(src_paths, tgt_paths)):
                 source_id = source_path.split('/')[-1][:4]
                 target_id = target_path.split('/')[-1][:4]
