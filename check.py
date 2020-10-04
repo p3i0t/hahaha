@@ -7,7 +7,7 @@ from facenet_pytorch import MTCNN, extract_face,\
 
 dir = 'logs/test'
 
-pair_in = open(os.path.join(dir, 'pair.txt'), 'r')
+pair_in = open('test/pair.txt', 'r')
 
 mtcnn = MTCNN(image_size=160)
 resnet1 = InceptionResnetV1(pretrained='vggface2').eval()
@@ -17,7 +17,10 @@ for idx, line in enumerate(pair_in):
     print('====> Pair ', idx+1)
     src, tgt = line.strip().split(' ')
 
-    src_img = Image.open(os.path.join('test', src))
+    src_adv = '{}_adv.png'.format(src[:4])
+    print('src ', src_adv)
+    print('tgt ', tgt)
+    src_img = Image.open(os.path.join('logs/test', src))  # adv
     tgt_img = Image.open(os.path.join('test', tgt))
 
     src_cropped, _, _ = mtcnn(src_img)
