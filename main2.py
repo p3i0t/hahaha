@@ -61,7 +61,7 @@ def iterative_grad_attack(inception_model, source_tensor, target_tensor,
     rep_dist = (target_rep * adv_rep).sum(dim=1).mean().cpu().item()
 
     adv_img = tensor_to_image(fixed_image_standardization_inverse(perturbed_tensor.cpu()).squeeze(0))
-    tgt_img = tensor_to_image(fixed_image_standardization_inverse(tgt_tensor.cpu()).squeeze(0))
+    tgt_img = tensor_to_image(fixed_image_standardization_inverse(target_tensor.cpu()).squeeze(0))
 
     pixel_dist = compute_dist(np.asarray(adv_img), np.asarray(tgt_img))
     return adv_img, pixel_dist, rep_dist
@@ -85,8 +85,6 @@ def attack(args, mode='val'):
             os.mkdir('val')
     else:
         logger.info('==> Attach on Test Set')
-        log_dir = os.path.join(args.log_dir, 'test')
-
         test_path = hydra.utils.to_absolute_path('test')
         pair_in = open(os.path.join(test_path, 'pair.txt'), 'r')
         lines = pair_in.readlines()
