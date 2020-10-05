@@ -111,8 +111,8 @@ def attack(args, mode='val'):
         src_crop, box_size, box = mtcnn(src_img)
         tgt_crop, _, _ = mtcnn(tgt_img)
 
-        src_crop = src_crop.unqueeze(0).cuda()
-        tgt_crop = tgt_crop.unqueeze(0).cuda()
+        src_crop = src_crop.unsqueeze(0).cuda()
+        tgt_crop = tgt_crop.unsqueeze(0).cuda()
         assert src_crop.size() == (1, 3, 160, 160)
 
         # adv attack
