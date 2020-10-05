@@ -63,3 +63,7 @@ for idx, line in enumerate(pair_in):
     if sim1 > 0.8 and sim2 > 0.8:
         cnt8 += 1
 
+print('sim > 0.6: ', cnt6)
+print('sim > 0.7: ', cnt7)
+print('sim > 0.8: ', cnt8)
+
