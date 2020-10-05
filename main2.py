@@ -77,22 +77,24 @@ def attack(args, mode='val'):
     np.random.seed(args.seed)
     if mode == 'val':
         logger.info('==> Attach on Val Set')
-        tgt_paths = glob.glob('val/*.png')
+        val_path = hydra.utils.to_absolute_path('val')
+        tgt_paths = glob.glob(val_path + '/*.png')
         src_paths = np.random.permutation(tgt_paths)
 
-        log_dir = os.path.join(args.log_dir, 'val')
-        if not os.path.isdir(log_dir):
-            os.mkdir(log_dir)
+        if not os.path.isdir('val'):
+            os.mkdir('val')
     else:
         logger.info('==> Attach on Test Set')
         log_dir = os.path.join(args.log_dir, 'test')
-        if not os.path.isdir(log_dir):
-            os.mkdir(log_dir)
 
-        pair_in = open('test/pair.txt', 'r')
+        test_path = hydra.utils.to_absolute_path('test')
+        pair_in = open(os.path.join(test_path, 'pair.txt'), 'r')
         lines = pair_in.readlines()
-        src_paths = [os.path.join('test', line.strip().split(' ')[0]) for line in lines]
-        tgt_paths = [os.path.join('test', line.strip().split(' ')[1]) for line in lines]
+        src_paths = [os.path.join(test_path, line.strip().split(' ')[0]) for line in lines]
+        tgt_paths = [os.path.join(test_path, line.strip().split(' ')[1]) for line in lines]
+
+        if not os.path.isdir('test'):
+            os.mkdir('test')
 
     pixel_dist_list = []
     rep_dist_list = []
@@ -129,14 +131,14 @@ def attack(args, mode='val'):
 
         # crop resize back and save.
         src_adv_img = crop_resize_back(src_img, adv_crop, box, box_size)
-        src_adv_img.save(os.path.join(log_dir, source_name))
+        src_adv_img.save(os.path.join(mode, source_name)) # save to val or test directory
 
         original_pixel_dist_list.append(compute_dist(np.asarray(src_adv_img), np.asarray(src_img)))
         if mode == 'val':
             pair_list.append((source_name, target_name))
 
     if mode == 'val':
-        pickle.dump(pair_list, open(os.path.join(log_dir, 'pair.pickle'), 'wb'))
+        pickle.dump(pair_list, open(os.path.join('val', 'pair.pickle'), 'wb'))
 
     return np.mean(original_pixel_dist_list), np.mean(pixel_dist_list), np.mean(rep_dist_list)
 
