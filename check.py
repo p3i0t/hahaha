@@ -43,7 +43,7 @@ for idx, line in enumerate(pair_in):
     tgt_rep = resnet1(tgt_cropped.unsqueeze(0))
 
     # origin_sim1 = (src_origin_rep * tgt_rep).sum().item()
-    sim1 = (src_rep * tgt_rep).sum().item()
+    sim1 = (src_rep * tgt_rep).sum(dim=1).mean().item()
     # print('similarity 1, origin: {:.4f}, adv: {:.4f}'.format(origin_sim1, sim1))
 
     src_rep = resnet2(src_cropped.unsqueeze(0))
@@ -51,7 +51,7 @@ for idx, line in enumerate(pair_in):
     tgt_rep = resnet2(tgt_cropped.unsqueeze(0))
 
     # origin_sim2 = (src_origin_rep * tgt_rep).sum().item()
-    sim2 = (src_rep * tgt_rep).sum().item()
+    sim2 = (src_rep * tgt_rep).sum(dim=1).mean().item()
     # print('similarity 2, origin: {:.4f}, adv: {:.4f}'.format(origin_sim2, sim2))
 
     if sim1 > 0.6 and sim2 > 0.6:
@@ -66,4 +66,3 @@ for idx, line in enumerate(pair_in):
 print('sim > 0.6: ', cnt6)
 print('sim > 0.7: ', cnt7)
 print('sim > 0.8: ', cnt8)
-
