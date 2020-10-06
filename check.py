@@ -73,6 +73,10 @@ for dataset in pretrained_datasets:
         src_origin_cropped, _, _ = mtcnn(src_origin)
         tgt_cropped, _, _ = mtcnn(tgt_img)
 
+        src_cropped = src_cropped.cuda()
+        src_origin_cropped = src_origin_cropped.cuda()
+        tgt_cropped = tgt_cropped.cuda()
+        
         src_rep = resnet1(src_cropped.unsqueeze(0))
         src_origin_rep = resnet1(src_origin_cropped.unsqueeze(0))
         tgt_rep = resnet1(tgt_cropped.unsqueeze(0))
